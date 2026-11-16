@@ -61,6 +61,7 @@ Ce que j'en retiens :
 ![Figure 2 – Courbes d'apprentissage : régression logistique et forêt aléatoire](figures/03_learning_curves.png)
 
 *Figure 2 – Courbes d'apprentissage : régression logistique et forêt aléatoire*
+
 - CatBoost est le meilleur sur chaque pli, mais l'écart est petit (environ 0,015) et il met environ 60 secondes à s'entraîner, contre 1 seconde pour HistGB. J'ai donc choisi HistGB pour la suite.
 - Le réglage des hyperparamètres a apporté +0,011 environ, soit moins d'un demi écart-type. C'est un petit gain.
 - Optuna a trouvé un bon score un peu plus vite que Random Search, mais avec une seule graine je ne peux pas dire qu'il est meilleur en général.
