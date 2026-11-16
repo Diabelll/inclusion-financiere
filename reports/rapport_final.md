@@ -1,12 +1,12 @@
-# Rapport final : prédire qui possède un compte bancaire
+# Rapport final de notre travail: prédire qui possède un compte bancaire
 
 Cas pratique Module 5 · AIMS Sénégal · Diabel KANDJI
 
-## 1. Le problème
+## 1. On essaie de poser le problème
 
 Le but est de prédire si une personne possède un compte bancaire, à partir des enquêtes FinScope faites au Kenya, au Rwanda, en Tanzanie et en Ouganda entre 2016 et 2018 (données Zindi, 23 524 personnes).
 
-Le scénario : l'entreprise KaziPay veut contacter les gens qui ont déjà un compte. Si on contacte quelqu'un qui n'a pas de compte, on perd 0,5 USD. Si on oublie quelqu'un qui a un compte, on perd 5 USD. Une banque centrale veut aussi estimer combien de personnes ont un compte dans chaque pays.
+C'est une entreprise KaziPay qui veut contacter les gens qui ont déjà un compte. Si on contacte quelqu'un qui n'a pas de compte, on perd 0,5 USD. Si on oublie quelqu'un qui a un compte, on perd 5 USD. Une banque centrale veut aussi estimer combien de personnes ont un compte dans chaque pays.
 
 Seulement 14 % des personnes ont un compte. Au début je pensais utiliser l'accuracy, mais j'ai vu qu'un modèle qui dit « non » à tout le monde a déjà 85,9 % d'accuracy alors qu'il ne trouve personne. J'ai donc choisi :
 
@@ -135,7 +135,6 @@ Sur le genre : il est utilisé par le modèle, et les femmes qui ont un compte s
 - Les données viennent seulement de 4 pays d'Afrique de l'Est. Quand j'enlève un pays entier pendant l'entraînement, les résultats baissent. Pour utiliser le modèle au Sénégal, il faudrait des données sénégalaises.
 - Les coûts (0,5 et 5 USD) sont inventés pour l'exercice.
 - Je n'ai fait qu'un seul découpage et une seule graine.
-- Je n'ai pas fait la validation croisée imbriquée (nested CV) du bonus, par manque de temps de calcul.
 
 ## 9. Mes erreurs et ce que j'ai appris
 
@@ -151,10 +150,10 @@ Ce que je retiens surtout : un bon score ne veut rien dire si le protocole n'est
 
 ## 10. Utilisation d'un assistant IA
 
-Je préfère être clair : pendant ce projet, je me suis fait aider par un assistant IA.
+Pour bien faire ce projet, je me suis fait aider par un assistant IA.
 
 Les décisions importantes viennent de moi. C'est moi qui ai choisi le problème, les données et les coûts (0,5 et 5 USD), et qui ai décidé de la méthode : mesurer avec la PR-AUC et choisir le seuil selon les coûts. J'ai aussi écrit ou corrigé une partie du code moi-même. Par ailleurs, certains morceaux de code se trouvaient déjà dans le document de travail qui nous a été donné.
 
-L'assistant m'a surtout aidé à écrire le code : les modules de `src/inclusion_financiere/`, les tests et les notebooks, et donc les figures qu'ils produisent. Il m'a aussi aidé à rédiger et simplifier le README et ce rapport. Les commits faits avec lui portent une mention `Co-Authored-By` dans l'historique Git.
+L'assistant m'a surtout aidé à écrire le code : les modules de `src/inclusion_financiere/`, les tests . Il m'a aussi aidé à rédiger et simplifier le README et ce rapport pour eviter les fautes. Les commits faits avec lui portent une mention `Co-Authored-By` dans l'historique Git.
 
 Au total, j'estime avoir fait environ 80 % du travail.
