@@ -3,7 +3,7 @@
 Cas pratique du module 5 (AIMS Sénégal) : à partir de 23 524 réponses aux enquêtes FinScope (Kenya, Rwanda, Tanzanie, Ouganda), prédire si une personne possède un compte bancaire.
 **Résultat principal** : un HistGradientBoosting réglé avec Optuna puis calibré atteint, sur le test scellé, une **PR-AUC de 0,597 [IC 95 % : 0,560 – 0,634]** (hasard : 0,141). Au seuil choisi selon les coûts (t* = 0,091), il retrouve **88 % des personnes bancarisées** et **divise par deux le coût** de la meilleure stratégie sans modèle.
 
-📄 Rapport final : [reports/rapport_final.md](reports/rapport_final.md) · 🌐 Page de présentation : https://diabelll.github.io/inclusion-financiere/
+📄 Rapport final : [reports/rapport_final.md](reports/rapport_final.md)
 
 ## Problème
 
