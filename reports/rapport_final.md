@@ -154,6 +154,8 @@ Pour bien faire ce projet, je me suis fait aider par un assistant IA.
 
 Les décisions importantes viennent de moi. C'est moi qui ai choisi le problème, les données et les coûts (0,5 et 5 USD), et qui ai décidé de la méthode : mesurer avec la PR-AUC et choisir le seuil selon les coûts. J'ai aussi écrit ou corrigé une partie du code moi-même. Par ailleurs, certains morceaux de code se trouvaient déjà dans le document de travail qui nous a été donné.
 
-L'assistant m'a surtout aidé à écrire le code : les modules de `src/inclusion_financiere/`, les tests . Il m'a aussi aidé à rédiger et simplifier le README et ce rapport pour eviter les fautes. Les commits faits avec lui portent une mention `Co-Authored-By` dans l'historique Git.
+L'assistant m'a surtout aidé à écrire le code : les modules de `src/inclusion_financiere/`, les tests. Il m'a aussi aidé à rédiger et simplifier le README et ce rapport pour éviter les fautes. Les commits faits avec lui portent une mention `Co-Authored-By` dans l'historique Git.
+
+En plus de l'assistant, j'ai consulté pas mal de sites internet et fait beaucoup de recherches sur Google pour m'appuyer, comprendre les méthodes et vérifier mes choix.
 
 Au total, j'estime avoir fait environ 80 % du travail.
