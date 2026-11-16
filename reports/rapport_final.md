@@ -25,6 +25,10 @@ Comme une erreur « oubli » coûte 10 fois plus qu'un contact inutile, le seuil
 - 484 profils identiques ont des réponses différentes (« Yes » et « No »). Donc aucun modèle ne peut être parfait : c'est le bruit irréductible du cours.
 - Les variables qui semblent les plus liées au compte : l'éducation, le type d'emploi (surtout l'emploi formel) et avoir un téléphone (1,7 % de bancarisés sans téléphone contre 18 % avec).
 
+![Figure 1 – Taux de bancarisation selon l'éducation, l'emploi et le téléphone](figures/01_taux_bancarisation.png)
+
+*Figure 1 – Taux de bancarisation selon l'éducation, l'emploi et le téléphone*
+
 ## 3. Ma méthode
 
 1. J'ai mis 20 % des données de côté comme **test**, sans y toucher jusqu'à la fin.
@@ -53,13 +57,25 @@ J'ai ajouté deux variables à moi (`is_alone` et `household_group`, liées à l
 Ce que j'en retiens :
 
 - La forêt par défaut surapprend énormément (0,99 en train, 0,48 en validation). En augmentant `min_samples_leaf`, ça s'arrange.
+
+![Figure 2 – Courbes d'apprentissage : régression logistique et forêt aléatoire](figures/03_learning_curves.png)
+
+*Figure 2 – Courbes d'apprentissage : régression logistique et forêt aléatoire*
 - CatBoost est le meilleur sur chaque pli, mais l'écart est petit (environ 0,015) et il met environ 60 secondes à s'entraîner, contre 1 seconde pour HistGB. J'ai donc choisi **HistGB** pour la suite.
 - Le réglage des hyperparamètres a apporté +0,011 environ, soit moins d'un demi écart-type. C'est un petit gain.
 - Optuna a trouvé un bon score un peu plus vite que Random Search, mais avec une seule graine je ne peux pas dire qu'il est meilleur en général.
 
+![Figure 3 – Meilleur score selon le nombre d'essais (Random Search et Optuna)](figures/04_convergence_recherches.png)
+
+*Figure 3 – Meilleur score selon le nombre d'essais (Random Search et Optuna)*
+
 ## 5. Calibration et seuil
 
 HistGB était déjà assez bien calibré (ECE de 0,008). J'ai quand même testé Platt et isotone : ça change très peu. J'ai gardé Platt.
+
+![Figure 4 – Diagramme de fiabilité avant et après calibration](figures/05_fiabilite.png)
+
+*Figure 4 – Diagramme de fiabilité avant et après calibration*
 
 Pour la banque centrale, j'ai été surpris : c'est la **régression logistique** qui donne les meilleurs totaux par pays (erreur moyenne 0,2 %), mieux que HistGB (2,5 %). La forêt aléatoire se trompe de 43 % en Ouganda.
 
@@ -74,6 +90,10 @@ Pour le seuil, sur les prédictions hors pli du train :
 
 Le seuil trouvé automatiquement par `TunedThresholdClassifierCV` (0,088) est presque le même que le seuil théorique, ce qui confirme que les probabilités sont bien calibrées. J'ai gardé **0,09**.
 
+![Figure 5 – Coût total selon le seuil (prédictions hors pli)](figures/05_cout_seuil.png)
+
+*Figure 5 – Coût total selon le seuil (prédictions hors pli)*
+
 ## 6. Résultat final sur le test
 
 | | Test (4 705 personnes) |
@@ -87,9 +107,23 @@ Le seuil trouvé automatiquement par `TunedThresholdClassifierCV` (0,088) est pr
 
 Le modèle retrouve 88 % des personnes bancarisées et coûte environ deux fois moins cher que de contacter tout le monde. Le score de validation croisée (0,577) est dans l'intervalle de confiance du test, donc mon estimation n'était pas trop optimiste.
 
+![Figure 6 – Courbe précision–recall et diagramme de fiabilité sur le test](figures/06_test_pr_fiabilite.png)
+
+*Figure 6 – Courbe précision–recall et diagramme de fiabilité sur le test*
+
 ## 7. Ce que le modèle a appris
 
 Avec l'importance par permutation et SHAP, les variables les plus importantes sont : **le niveau d'éducation**, **le type d'emploi**, **le pays**, **l'accès au téléphone** et **l'âge**. Ça confirme mes trois hypothèses de l'exploration.
+
+![Figure 7 – Contributions SHAP des variables (test)](figures/06_shap_beeswarm.png)
+
+*Figure 7 – Contributions SHAP des variables (test)*
+
+Exemple pour une personne (homme de 30 ans, Kenya, études secondaires, salarié du privé) : le modèle lui donne 74 % de chances d'avoir un compte, surtout à cause de son emploi formel et de son niveau d'éducation.
+
+![Figure 8 – Explication SHAP de la prédiction pour une personne](figures/06_shap_waterfall.png)
+
+*Figure 8 – Explication SHAP de la prédiction pour une personne*
 
 Attention : ce sont des corrélations. On ne peut pas dire que donner un téléphone à quelqu'un lui fera ouvrir un compte.
 
