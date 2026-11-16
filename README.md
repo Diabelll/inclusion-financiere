@@ -115,6 +115,10 @@ Les variables les plus importantes sont l'éducation, le type d'emploi, le pays,
 - Pour compter par pays, la régression logistique est plus juste (0,2 % d'erreur) que HistGB (2,5 %).
 - Une seule graine et un seul découpage.
 
+## Utilisation d'un assistant IA
+
+J'ai utilisé un assistant IA (Claude, d'Anthropic, dans Claude Code) pour ce projet. Il a écrit avec moi le code (`src/`, `tests/`, notebooks des étapes 0 à 11) et a aidé à rédiger ce README et le rapport final. Les commits faits avec lui portent la mention `Co-Authored-By: Claude`. Le détail est dans la section 10 du [rapport final](reports/rapport_final.md).
+
 ## Réponses aux questions de l'étape 0
 
 Q0.1 — `uv.lock` garde les versions exactes de toutes les librairies, donc `uv sync` recrée le même environnement partout. Il est petit, on le met dans Git. `.venv/` est l'environnement installé : il est lourd, dépend de la machine, et on peut le recréer avec `uv.lock`. Pas besoin de le mettre dans Git.
