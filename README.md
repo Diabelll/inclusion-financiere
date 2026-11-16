@@ -1,27 +1,32 @@
 # Qui possède un compte bancaire ? Prédire l'inclusion financière en Afrique de l'Est
 
-Cas pratique du module 5 (AIMS Sénégal) : à partir de 23 524 réponses aux enquêtes FinScope (Kenya, Rwanda, Tanzanie, Ouganda), prédire si une personne possède un compte bancaire.
-**Résultat principal** : un HistGradientBoosting réglé avec Optuna puis calibré atteint, sur le test scellé, une **PR-AUC de 0,597 [IC 95 % : 0,560 – 0,634]** (hasard : 0,141). Au seuil choisi selon les coûts (t* = 0,091), il retrouve **88 % des personnes bancarisées** et **divise par deux le coût** de la meilleure stratégie sans modèle.
+Cas pratique du module 5 (AIMS Sénégal). Avec 23 524 réponses aux enquêtes FinScope (Kenya, Rwanda, Tanzanie, Ouganda), on essaie de prédire si une personne a un compte bancaire.
+
+Résultat principal : mon modèle final (HistGradientBoosting réglé avec Optuna, puis calibré) obtient une PR-AUC de 0,597 sur le test [IC 95 % : 0,560 – 0,634], alors qu'au hasard on aurait 0,141. Avec le seuil choisi selon les coûts (0,091), il retrouve 88 % des personnes qui ont un compte et coûte deux fois moins cher que de contacter tout le monde.
 
 📄 Rapport final : [reports/rapport_final.md](reports/rapport_final.md)
 
 ## Problème
 
-- **Scénario** : KaziPay (entreprise fictive) veut contacter par SMS puis appel les personnes **déjà bancarisées**. Contacter une personne sans compte coûte **0,5 USD** (faux positif) ; oublier une personne bancarisée fait perdre **5 USD** (faux négatif). Une banque centrale veut aussi **compter** les personnes bancarisées par pays en additionnant les probabilités.
-- **Classe positive** : `bank_account = "Yes"` (14,08 % des personnes).
-- **Métriques** : PR-AUC (principale : classement de la classe rare, indépendant du seuil, référence au hasard = prévalence) ; Brier et ECE (calibration, nécessaire pour le comptage) ; coût métier `0,5·FP + 5·FN` au seuil retenu. L'accuracy est trompeuse : répondre « non » à tout le monde donne 85,9 %.
-- **Seuil théorique** : t* = C_FP / (C_FP + C_FN) = 0,5 / 5,5 ≈ 0,091.
+- L'entreprise KaziPay (fictive) veut contacter les personnes qui ont déjà un compte. Contacter quelqu'un sans compte coûte 0,5 USD. Oublier quelqu'un qui a un compte coûte 5 USD. Une banque centrale veut aussi compter les personnes bancarisées dans chaque pays.
+- On cherche les `bank_account = "Yes"` : seulement 14 % des personnes.
+- Métriques :
+  - PR-AUC (principale) : elle regarde si le modèle trouve bien les « Yes », qui sont rares ;
+  - Brier et ECE : pour vérifier que les probabilités sont justes (utile pour compter) ;
+  - coût en dollars : `0,5·FP + 5·FN`.
+- Je n'utilise pas l'accuracy : un modèle qui répond « non » à tout le monde a déjà 85,9 %.
+- Seuil : comme un oubli coûte 10 fois plus qu'un contact inutile, le seuil est 0,5 / (0,5 + 5) ≈ 0,091 et pas 0,5.
 
 ## Données
 
-- Source : compétition [Financial Inclusion in Africa](https://zindi.africa/competitions/financial-inclusion-in-africa) (Zindi), enquêtes FinScope 2016–2018.
-- 23 524 lignes, 13 colonnes, aucune valeur manquante ; 3 312 personnes bancarisées (14,08 %), de 8,6 % (Ouganda) à 25,1 % (Kenya).
-- Pièges repérés (notebook 01) :
-  - `year` est entièrement déterminée par `country` (une année par pays) : retirée ;
-  - `uniqueid` n'est unique que dans chaque pays (numérotation qui recommence) et n'a pas de sens : retiré ;
-  - 7 497 lignes partagent leur profil avec une autre, dont 484 profils à étiquettes contradictoires (1 746 lignes) : bruit irréductible, pas une fuite ;
-  - modalités rares (`marital_status = "Dont know"`, 8 lignes ; `education_level = "Other/Dont know/RTA"`, 35) : regroupées par l'encodeur (`min_frequency=20`).
-- Les données **ne sont pas versionnées**. Téléchargez sur Zindi (onglet *Data*) le fichier d'entraînement et `VariableDefinitions.csv`, et placez-les dans `data/raw/` en nommant le fichier d'entraînement `inclusion-financiere-en-afrique.csv`.
+- Source : la compétition [Financial Inclusion in Africa](https://zindi.africa/competitions/financial-inclusion-in-africa) sur Zindi (enquêtes 2016–2018).
+- 23 524 lignes, 13 colonnes, aucune valeur manquante. 14,08 % de personnes bancarisées : de 8,6 % en Ouganda à 25,1 % au Kenya.
+- Ce que j'ai remarqué (notebook 01) :
+  - `year` donne la même information que `country` (une seule année par pays), je l'ai retirée ;
+  - `uniqueid` est juste un numéro qui recommence dans chaque pays, je l'ai retiré ;
+  - 484 profils identiques ont des réponses différentes : aucun modèle ne peut être parfait ;
+  - quelques modalités sont très rares, l'encodeur les regroupe (`min_frequency=20`).
+- Les données ne sont pas dans le dépôt. Il faut les télécharger sur Zindi (onglet *Data*) avec `VariableDefinitions.csv`, et les mettre dans `data/raw/` en appelant le fichier d'entraînement `inclusion-financiere-en-afrique.csv`.
 
 ## Installation
 
@@ -34,7 +39,7 @@ uv sync
 
 ## Reproduction
 
-Exécuter les notebooks **dans l'ordre** (`uv run jupyter lab`) : chacun transmet ses décisions au suivant via `data/processed/decisions.json`.
+Il faut lancer les notebooks dans l'ordre (`uv run jupyter lab`), car chacun passe ses choix au suivant via `data/processed/decisions.json`.
 
 | Notebook | Étapes | Durée indicative |
 |---|---|---|
@@ -49,13 +54,14 @@ Tests : `uv run pytest` · Style : `uv run ruff check src tests`.
 
 ## Méthode
 
-- **Code réutilisable** dans `src/inclusion_financiere/` : `config.py` (chemins, graine 42, coûts), `data.py` (chargement, nettoyage, découpage, objet `cv`), `features.py` (`AddFeatures`, préprocesseur, `pipe()`), `evaluate.py` (résumé de CV, ECE, coût, IC bootstrap).
-- **Pipeline sans fuite** : `AddFeatures` (règles fixes : rang d'éducation, chef de ménage, emploi formel, urbain × téléphone, tranches d'âge, personne seule, taille du ménage par tranches) → `OneHotEncoder(handle_unknown="infrequent_if_exist", min_frequency=20)` + `StandardScaler` → modèle. Tout ce qui apprend des données est réajusté dans chaque pli.
-- **Protocole** : test de 20 % stratifié, mis sous scellé et ouvert une seule fois (notebook 06) ; validation croisée stratifiée à 5 plis (graine 42), **le même objet `cv` pour tous les modèles**, scores toujours donnés en moyenne ± écart-type et comparés pli par pli ; expérience complémentaire « pays jamais vu » avec `StratifiedGroupKFold`.
-- **Modèles comparés** : Dummy, régression logistique, forêt aléatoire (régularisée par `min_samples_leaf=50`, règle d'une erreur-type), HistGradientBoosting, XGBoost, LightGBM, CatBoost (catégories natives).
-- **Réglage** : HistGB, 40 essais Random Search et 40 essais Optuna (TPE), PR-AUC, mêmes plis.
-- **Calibration** : Platt et isotone via `CalibratedClassifierCV(cv=5)`, mesurées sur des prédictions hors pli (Brier, ECE, diagramme de fiabilité).
-- **Seuil** : t* théorique, confirmé par `TunedThresholdClassifierCV` et la courbe de coût hors pli.
+- Le code réutilisable est dans `src/inclusion_financiere/` : `config.py` (chemins, graine 42, coûts), `data.py` (chargement, nettoyage, découpage, `cv`), `features.py` (nouvelles variables, pipeline), `evaluate.py` (scores, coût, intervalles de confiance).
+- Tout est dans un pipeline (nouvelles variables → one-hot + standardisation → modèle), pour éviter les fuites : tout est réappris dans chaque pli.
+- J'ai mis 20 % des données de côté pour le test, ouvert une seule fois à la fin (notebook 06).
+- Les modèles sont comparés avec une validation croisée stratifiée à 5 plis, toujours les mêmes plis, en donnant moyenne ± écart-type. J'ai aussi testé le cas « pays jamais vu ».
+- Modèles comparés : Dummy, régression logistique, forêt aléatoire, HistGradientBoosting, XGBoost, LightGBM, CatBoost.
+- Réglage de HistGB : 40 essais Random Search et 40 essais Optuna.
+- Calibration : Platt et isotone, vérifiées sur des prédictions hors pli.
+- Seuil : le seuil théorique, vérifié avec `TunedThresholdClassifierCV`.
 
 ## Résultats
 
@@ -70,26 +76,26 @@ Tests : `uv run pytest` · Style : `uv run ruff check src tests`.
 | LightGBM (défaut) | 0,565 ± 0,028 | 0,855 | 0,086 | 0,6 s |
 | HistGB (défaut) | 0,568 ± 0,028 | 0,857 | 0,086 | 1,0 s |
 | CatBoost natif (défaut) | 0,582 ± 0,027 | 0,863 | 0,084 | 62 s |
-| **HistGB réglé (Optuna)** | **0,579 ± 0,026** | 0,861 | 0,085 | ~1 s |
+| HistGB réglé (Optuna) | 0,579 ± 0,026 | 0,861 | 0,085 | ~1 s |
 
-CatBoost gagne tous les plis mais de peu (~0,015) et il est 60 fois plus lent ; HistGB a été retenu pour sa rapidité. Le réglage apporte +0,011 (0,4 écart-type), un gain modeste et optimiste (maximum de 40 essais).
+CatBoost est un peu meilleur (~0,015) mais 60 fois plus lent, donc j'ai choisi HistGB. Le réglage a apporté +0,011, un petit gain.
 
 ### Test (4 705 personnes, ouvert une seule fois)
 
 | Métrique | Valeur |
 |---|---|
-| PR-AUC | **0,597** [0,560 – 0,634] |
+| PR-AUC | 0,597 [0,560 – 0,634] |
 | ROC-AUC | 0,875 [0,861 – 0,889] |
 | Brier / ECE | 0,082 / 0,012 |
 | Matrice (TN, FP, FN, TP) au seuil 0,091 | 2 770 ; 1 273 ; 80 ; 582 |
 | Recall / précision | 0,879 / 0,314 |
-| **Coût au seuil retenu** | **1 036,5 USD** |
+| Coût au seuil retenu | 1 036,5 USD |
 | Coût au seuil 0,5 | 2 109,0 USD |
 | Contacter tout le monde / personne | 2 021,5 / 3 310,0 USD |
 
-L'estimation de validation croisée (0,577) tombe dans l'intervalle de confiance du test.
+Le score de validation croisée (0,577) est dans l'intervalle du test, donc mon estimation était correcte.
 
-> **Remarque sur le test (Q10.3).** Dans mes premiers brouillons (non publiés), j'avais calculé par erreur quelques scores sur le jeu de test dès l'étape 3 (ROC-AUC d'une régression logistique et d'une forêt aléatoire, autour de 0,86–0,87). Je m'en suis rendu compte et j'ai tout refait avec le test sous scellé. Aucun choix final (modèle, hyperparamètres, calibration, seuil) n'a été fait à partir de ces scores, mais le test n'était pas « vierge » à 100 % : les résultats sur le test sont donc peut-être un peu optimistes.
+> Remarque sur le test (Q10.3). Dans mes premiers brouillons (non publiés), j'avais calculé par erreur quelques scores sur le test dès l'étape 3 (ROC-AUC autour de 0,86–0,87). J'ai ensuite tout refait avec le test mis de côté. Aucun choix final n'a été fait avec ces scores, mais le test n'était pas complètement « neuf » : les résultats du test sont peut-être un peu optimistes.
 
 ## Figures
 
@@ -98,21 +104,21 @@ L'estimation de validation croisée (0,577) tombe dans l'intervalle de confiance
 | ![Fiabilité](reports/figures/05_fiabilite.png) | ![PR et fiabilité sur le test](reports/figures/06_test_pr_fiabilite.png) |
 | ![Coût selon le seuil](reports/figures/05_cout_seuil.png) | ![SHAP](reports/figures/06_shap_beeswarm.png) |
 
-Les variables les plus importantes (permutation et SHAP) sont l'**éducation**, le **type d'emploi**, le **pays**, l'**accès au téléphone** et l'**âge**.
+Les variables les plus importantes sont l'éducation, le type d'emploi, le pays, le téléphone et l'âge.
 
 ## Limites
 
-- **Généralisation à un autre pays** : en laissant un pays entier de côté, la ROC-AUC baisse (0,79 à 0,84). Les quatre pays sont d'Afrique de l'Est (2016–2018) : un usage au Sénégal demanderait des données locales, une nouvelle évaluation et une recalibration.
-- **Variables sensibles** : le genre contribue aux prédictions et le recall est plus faible chez les femmes (0,85 contre 0,91). Je recommande de le retirer des variables de décision et de le garder pour auditer l'équité (voir Q11.4).
-- **Coûts hypothétiques** : 0,5 et 5 USD sont des hypothèses pédagogiques ; le seuil doit être recalculé avec les vrais coûts (t* = 0,20 si C_FN = 2 USD).
-- **Corrélation, pas causalité** : le modèle ne dit pas que donner un téléphone ou une formation ferait ouvrir un compte.
-- **Comptage par pays** : pour la banque centrale, la régression logistique donne des sommes de probabilités plus justes (erreur moyenne 0,2 %) que HistGB (2,5 %).
-- Une seule graine, un seul découpage ; les comparaisons de méthodes de recherche (Random Search vs Optuna) ne se généralisent pas.
+- Autre pays : quand on enlève un pays entier, les résultats baissent (ROC-AUC de 0,79 à 0,84). Pour le Sénégal, il faudrait des données locales.
+- Genre : le modèle retrouve moins bien les femmes qui ont un compte (recall 0,85 contre 0,91). Je propose de le retirer du modèle et de le garder seulement pour vérifier l'équité (Q11.4).
+- Les coûts (0,5 et 5 USD) sont inventés pour l'exercice. Si on change les coûts, il faut recalculer le seuil (0,20 si l'oubli coûte 2 USD).
+- Ce sont des corrélations : donner un téléphone à quelqu'un ne lui fera pas forcément ouvrir un compte.
+- Pour compter par pays, la régression logistique est plus juste (0,2 % d'erreur) que HistGB (2,5 %).
+- Une seule graine et un seul découpage.
 
 ## Réponses aux questions de l'étape 0
 
-**Q0.1** — `uv.lock` enregistre les **versions exactes** (et les empreintes) de toutes les dépendances, directes et indirectes : `uv sync` recrée le même environnement sur n'importe quelle machine. Il est petit, textuel et indépendant du système : il se versionne. `.venv/` est l'environnement installé : lourd, propre à un système d'exploitation et à un chemin, et entièrement **reconstructible** à partir de `uv.lock`. Le versionner serait inutile et fragile.
+Q0.1 — `uv.lock` garde les versions exactes de toutes les librairies, donc `uv sync` recrée le même environnement partout. Il est petit, on le met dans Git. `.venv/` est l'environnement installé : il est lourd, dépend de la machine, et on peut le recréer avec `uv.lock`. Pas besoin de le mettre dans Git.
 
-**Q0.2** — (1) **Conditions d'utilisation** : les données appartiennent à Zindi / FinScope ; les redistribuer sur un dépôt public n'est pas autorisé, chacun doit les télécharger à la source. (2) **Taille et nature** : Git est fait pour du code ; des fichiers de données lourds alourdissent l'historique pour toujours. (Plus généralement, des données personnelles ne doivent jamais se retrouver dans un dépôt public.)
+Q0.2 — (1) Les données appartiennent à Zindi / FinScope, on n'a pas le droit de les republier. (2) Git est fait pour le code, pas pour de gros fichiers de données.
 
-**Q0.3** — Une seule version de chaque fonction : une correction s'applique partout et les notebooks restent cohérents entre eux (même découpage, même `cv`, même pipeline) ; le code est **testable** (`tests/`) et importable (`from inclusion_financiere.features import pipe`) ; les notebooks restent courts et centrés sur l'analyse.
+Q0.3 — Chaque fonction n'existe qu'une seule fois : si je corrige un bug, c'est corrigé dans tous les notebooks. Le code peut être testé (`tests/`), et les notebooks restent courts.
