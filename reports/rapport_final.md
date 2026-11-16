@@ -150,10 +150,10 @@ Ce que je retiens surtout : un bon score ne veut rien dire si le protocole n'est
 
 ## 10. Utilisation d'un assistant IA
 
-Je préfère être clair : pendant ce projet, je me suis fait aider par un assistant IA (Claude, d'Anthropic, dans l'outil Claude Code).
+Je préfère être clair : pendant ce projet, je me suis fait aider par un assistant IA.
 
-Les décisions importantes viennent de moi. C'est moi qui ai choisi le problème, les données et les coûts (0,5 et 5 USD), et qui ai décidé de la méthode : mesurer avec la PR-AUC et choisir le seuil selon les coûts. J'ai aussi écrit ou corrigé une partie du code moi-même.
+Les décisions importantes viennent de moi. C'est moi qui ai choisi le problème, les données et les coûts (0,5 et 5 USD), et qui ai décidé de la méthode : mesurer avec la PR-AUC et choisir le seuil selon les coûts. J'ai aussi écrit ou corrigé une partie du code moi-même. Par ailleurs, certains morceaux de code se trouvaient déjà dans le document de travail qui nous a été donné.
 
-L'assistant m'a surtout aidé à écrire le code : les modules de `src/inclusion_financiere/`, les tests et les notebooks, et donc les figures qu'ils produisent. Il m'a aussi aidé à rédiger et simplifier le README et ce rapport. Les commits faits avec lui portent la mention `Co-Authored-By: Claude` dans l'historique Git.
+L'assistant m'a surtout aidé à écrire le code : les modules de `src/inclusion_financiere/`, les tests et les notebooks, et donc les figures qu'ils produisent. Il m'a aussi aidé à rédiger et simplifier le README et ce rapport. Les commits faits avec lui portent une mention `Co-Authored-By` dans l'historique Git.
 
 Au total, j'estime avoir fait environ 80 % du travail.

@@ -117,7 +117,7 @@ Les variables les plus importantes sont l'éducation, le type d'emploi, le pays,
 
 ## Utilisation d'un assistant IA
 
-J'ai utilisé un assistant IA (Claude, d'Anthropic, dans Claude Code) pour ce projet. Il a écrit avec moi le code (`src/`, `tests/`, notebooks des étapes 0 à 11) et a aidé à rédiger ce README et le rapport final. Les commits faits avec lui portent la mention `Co-Authored-By: Claude`. Le détail est dans la section 10 du [rapport final](reports/rapport_final.md).
+J'ai utilisé un assistant IA pour ce projet. Il m'a aidé à écrire le code (`src/`, `tests/`, notebooks des étapes 0 à 11) et à rédiger ce README et le rapport final. Certains morceaux de code venaient déjà du document de travail qui nous a été donné. Les commits faits avec l'assistant portent une mention `Co-Authored-By`. Le détail est dans la section 10 du [rapport final](reports/rapport_final.md).
 
 ## Réponses aux questions de l'étape 0
 
