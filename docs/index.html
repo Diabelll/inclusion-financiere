@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inclusion financière en Afrique de l'Est</title>
+<meta name="description" content="Prédire qui possède un compte bancaire au Kenya, au Rwanda, en Tanzanie et en Ouganda : cas pratique de machine learning (AIMS Sénégal, module 5).">
+<style>
+  :root {
+    --bg: #fbfaf7; --surface: #ffffff; --text: #1d2433; --muted: #5b6475;
+    --border: #e4e1d8; --accent: #1f4e79; --accent-soft: #e8eff6; --good: #2e6b3f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12161d; --surface: #1a2029; --text: #e6e9ef; --muted: #a2abba;
+      --border: #2c3542; --accent: #8ab6e0; --accent-soft: #1e2a38; --good: #7cc591;
+    }
+    figure img { background: #fff; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 0 16px 64px; }
+  header { padding: 56px 0 28px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .kicker { color: var(--accent); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+  h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.2; margin: 10px 0 14px; }
+  h2 { font-size: 24px; margin: 48px 0 12px; }
+  h3 { font-size: 18px; margin: 28px 0 8px; }
+  .lead { font-size: 19px; color: var(--muted); margin: 0; }
+  .links { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .links a {
+    display: inline-block; padding: 8px 14px; border-radius: 8px; text-decoration: none;
+    border: 1px solid var(--border); color: var(--text); background: var(--surface); font-size: 15px;
+  }
+  .links a.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 28px 0 8px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .kpi b { display: block; font-size: 28px; color: var(--accent); line-height: 1.2; }
+  .kpi span { color: var(--muted); font-size: 14px; }
+  a { color: var(--accent); }
+  .table-wrap { overflow-x: auto; margin: 14px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; background: var(--surface); }
+  th, td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+  th { background: var(--accent-soft); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.best td { font-weight: 700; }
+  figure { margin: 22px 0; }
+  figure img { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; display: block; }
+  figcaption { color: var(--muted); font-size: 14px; margin-top: 6px; }
+  .note { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: 6px; }
+  code { font-size: 14px; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+  footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <div class="kicker">Cas pratique · Machine learning · AIMS Sénégal</div>
+  <h1>Qui possède un compte bancaire&nbsp;? Prédire l'inclusion financière en Afrique de l'Est</h1>
+  <p class="lead">À partir de 23 524 réponses aux enquêtes FinScope (Kenya, Rwanda, Tanzanie, Ouganda), j'ai construit un modèle qui prédit si une personne a un compte bancaire, puis je l'ai utilisé pour décider qui contacter en minimisant un coût.</p>
+  <div class="links">
+    <a class="primary" href="https://github.com/Diabelll/inclusion-financiere">Code sur GitHub</a>
+    <a href="https://github.com/Diabelll/inclusion-financiere/blob/main/reports/rapport_final.md">Rapport complet</a>
+    <a href="https://github.com/Diabelll/inclusion-financiere/tree/main/notebooks">Notebooks</a>
+  </div>
+</header>
+
+<div class="kpis">
+  <div class="kpi"><b>0,597</b><span>PR-AUC sur le test (hasard&nbsp;: 0,141)</span></div>
+  <div class="kpi"><b>88&nbsp;%</b><span>des personnes bancarisées retrouvées</span></div>
+  <div class="kpi"><b>−49&nbsp;%</b><span>de coût par rapport à « contacter tout le monde »</span></div>
+</div>
+
+<h2>Le problème</h2>
+<p>Une entreprise fictive, KaziPay, veut contacter les personnes qui ont <strong>déjà</strong> un compte bancaire. Contacter quelqu'un sans compte coûte <strong>0,5&nbsp;USD</strong>&nbsp;; oublier quelqu'un qui en a un fait perdre <strong>5&nbsp;USD</strong>. Une banque centrale veut aussi estimer le nombre de personnes bancarisées par pays.</p>
+<p>Seulement 14&nbsp;% des personnes ont un compte. Un modèle qui répond « non » à tout le monde a donc 86&nbsp;% d'accuracy… et ne trouve personne. J'ai choisi comme métrique principale la <strong>PR-AUC</strong>, avec le score de Brier pour la qualité des probabilités et le <strong>coût en USD</strong> pour la décision.</p>
+<p>Comme un oubli coûte 10 fois plus qu'un contact inutile, le bon seuil n'est pas 0,5 mais <code>0,5 / (0,5 + 5) ≈ 0,09</code>.</p>
+
+<h2>Les données</h2>
+<p>Pas de valeur manquante, mais quelques pièges&nbsp;: la colonne <code>year</code> est entièrement déterminée par le pays (je l'ai retirée), <code>uniqueid</code> n'est qu'un numéro qui recommence dans chaque pays (retiré aussi), et 484 profils identiques ont des réponses différentes&nbsp;: aucun modèle ne peut être parfait.</p>
+<figure>
+  <img src="figures/01_taux_bancarisation.png" alt="Taux de bancarisation selon le niveau d'éducation, le type d'emploi et l'accès au téléphone" loading="lazy">
+  <figcaption>Taux de bancarisation selon l'éducation, l'emploi et l'accès au téléphone. Sans téléphone, à peine 1,7&nbsp;% des personnes ont un compte.</figcaption>
+</figure>
+
+<h2>La méthode</h2>
+<ul>
+  <li><strong>Test mis de côté</strong> (20&nbsp;%) et utilisé une seule fois, à la fin.</li>
+  <li><strong>Pipeline scikit-learn</strong> pour toutes les transformations (nouvelles variables, one-hot, standardisation), afin d'éviter les fuites.</li>
+  <li><strong>Validation croisée stratifiée à 5 plis</strong>, les mêmes plis pour tous les modèles, toujours avec moyenne ± écart-type.</li>
+  <li>Comparaison de 7 modèles, puis <strong>réglage des hyperparamètres</strong> (Random Search et Optuna).</li>
+  <li><strong>Calibration</strong> des probabilités et choix du <strong>seuil selon les coûts</strong>.</li>
+  <li>Interprétation avec l'<strong>importance par permutation</strong> et <strong>SHAP</strong>.</li>
+</ul>
+
+<h2>Comparaison des modèles</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Modèle (validation croisée)</th><th class="num">PR-AUC</th><th class="num">ROC-AUC</th><th class="num">Temps</th></tr></thead>
+  <tbody>
+    <tr><td>Dummy (répond toujours « non »)</td><td class="num">0,141 ± 0,000</td><td class="num">0,500</td><td class="num">0,3 s</td></tr>
+    <tr><td>Régression logistique</td><td class="num">0,559 ± 0,028</td><td class="num">0,849</td><td class="num">0,5 s</td></tr>
+    <tr><td>Forêt aléatoire (min_samples_leaf = 50)</td><td class="num">0,566 ± 0,032</td><td class="num">0,854</td><td class="num">1,8 s</td></tr>
+    <tr><td>XGBoost</td><td class="num">0,544 ± 0,024</td><td class="num">0,845</td><td class="num">1,0 s</td></tr>
+    <tr><td>LightGBM</td><td class="num">0,565 ± 0,028</td><td class="num">0,855</td><td class="num">0,6 s</td></tr>
+    <tr><td>HistGradientBoosting</td><td class="num">0,568 ± 0,028</td><td class="num">0,857</td><td class="num">1,0 s</td></tr>
+    <tr><td>CatBoost</td><td class="num">0,582 ± 0,027</td><td class="num">0,863</td><td class="num">62 s</td></tr>
+    <tr class="best"><td>HistGradientBoosting réglé (retenu)</td><td class="num">0,579 ± 0,026</td><td class="num">0,861</td><td class="num">~1 s</td></tr>
+  </tbody>
+</table>
+</div>
+<p>CatBoost est le meilleur, mais de peu (environ 0,015) et 60 fois plus lent. J'ai choisi HistGradientBoosting, presque aussi bon et beaucoup plus rapide. Le réglage des hyperparamètres apporte un petit gain (+0,011, moins d'un demi écart-type).</p>
+<figure>
+  <img src="figures/03_learning_curves.png" alt="Courbes d'apprentissage de la régression logistique et de la forêt aléatoire" loading="lazy">
+  <figcaption>Courbes d'apprentissage&nbsp;: la forêt par défaut surapprend fortement (train ≈ 0,99, validation ≈ 0,48)&nbsp;; la régression logistique a convergé.</figcaption>
+</figure>
+<figure>
+  <img src="figures/04_convergence_recherches.png" alt="Meilleur score obtenu selon le nombre d'essais pour Random Search et Optuna" loading="lazy">
+  <figcaption>Meilleur score selon le nombre d'essais&nbsp;: Optuna va un peu plus vite au début, puis les deux méthodes se rejoignent.</figcaption>
+</figure>
+
+<h2>Calibration et choix du seuil</h2>
+<p>Le modèle était déjà bien calibré&nbsp;: une probabilité annoncée de 30&nbsp;% correspond à peu près à 30&nbsp;% de personnes bancarisées. Le seuil trouvé automatiquement (0,088) est presque identique au seuil théorique (0,091), ce qui le confirme.</p>
+<figure>
+  <img src="figures/05_fiabilite.png" alt="Diagramme de fiabilité avant et après calibration" loading="lazy">
+  <figcaption>Diagramme de fiabilité&nbsp;: les courbes suivent la diagonale, les probabilités sont fiables.</figcaption>
+</figure>
+<figure>
+  <img src="figures/05_cout_seuil.png" alt="Coût total en dollars selon le seuil de décision" loading="lazy">
+  <figcaption>Coût total selon le seuil&nbsp;: le minimum est autour de 0,09, loin du seuil 0,5 habituel.</figcaption>
+</figure>
+
+<h2>Résultat final sur le test</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Test (4 705 personnes)</th><th class="num">Valeur</th></tr></thead>
+  <tbody>
+    <tr><td>PR-AUC</td><td class="num">0,597 [IC 95&nbsp;% : 0,560 – 0,634]</td></tr>
+    <tr><td>ROC-AUC</td><td class="num">0,875</td></tr>
+    <tr><td>Recall / précision au seuil 0,09</td><td class="num">0,88 / 0,31</td></tr>
+    <tr class="best"><td>Coût au seuil 0,09</td><td class="num">1 036 USD</td></tr>
+    <tr><td>Coût au seuil 0,5</td><td class="num">2 109 USD</td></tr>
+    <tr><td>Contacter tout le monde</td><td class="num">2 021 USD</td></tr>
+    <tr><td>Ne contacter personne</td><td class="num">3 310 USD</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Le score de validation croisée (0,577) est dans l'intervalle de confiance du test&nbsp;: mon estimation n'était pas trop optimiste.</p>
+<figure>
+  <img src="figures/06_test_pr_fiabilite.png" alt="Courbe précision-recall et diagramme de fiabilité sur le jeu de test" loading="lazy">
+  <figcaption>Sur le test&nbsp;: courbe précision–recall (à gauche) et diagramme de fiabilité (à droite).</figcaption>
+</figure>
+
+<h2>Ce que le modèle a appris</h2>
+<p>Les variables les plus importantes sont le <strong>niveau d'éducation</strong>, le <strong>type d'emploi</strong>, le <strong>pays</strong>, l'<strong>accès au téléphone</strong> et l'<strong>âge</strong>. Ce sont des corrélations&nbsp;: on ne peut pas en conclure que donner un téléphone fait ouvrir un compte.</p>
+<figure>
+  <img src="figures/06_shap_beeswarm.png" alt="Graphique SHAP montrant la contribution de chaque variable aux prédictions" loading="lazy">
+  <figcaption>Contributions SHAP&nbsp;: chaque point est une personne du test.</figcaption>
+</figure>
+<figure>
+  <img src="figures/06_shap_waterfall.png" alt="Explication SHAP de la prédiction pour une personne" loading="lazy">
+  <figcaption>Une personne (homme de 30 ans, Kenya, études secondaires, salarié du privé)&nbsp;: 74&nbsp;% de chances d'avoir un compte, surtout grâce à son emploi formel et à son éducation.</figcaption>
+</figure>
+<p class="note"><strong>Et le genre&nbsp;?</strong> Le modèle l'utilise, et les femmes bancarisées sont un peu moins bien retrouvées (recall 0,85) que les hommes (0,91). À mon avis, il vaudrait mieux retirer cette variable pour décider qui contacter, et la garder seulement pour vérifier l'équité du modèle.</p>
+
+<h2>Limites</h2>
+<ul>
+  <li>Quatre pays d'Afrique de l'Est seulement (2016–2018)&nbsp;: quand on retire un pays entier de l'entraînement, les résultats baissent. Pour un autre pays, il faudrait des données locales.</li>
+  <li>Les coûts (0,5 et 5&nbsp;USD) sont des hypothèses de l'exercice.</li>
+  <li>Un seul découpage et une seule graine aléatoire.</li>
+</ul>
+
+<h2>Comment j'ai fait ce projet</h2>
+<p>J'ai d'abord réalisé ce cas pratique seul, en suivant le guide du module 5 d'AIMS Sénégal, pour apprendre. J'ai ensuite utilisé un assistant IA (Claude) pour relire mon travail&nbsp;: il a repéré plusieurs erreurs (évaluation sur le test trop tôt, notebooks qui ne s'exécutaient pas, pipeline incomplet) et m'a aidé à réorganiser le code et à finaliser le rapport. Mes erreurs et ce que j'en ai appris sont décrits dans le <a href="https://github.com/Diabelll/inclusion-financiere/blob/main/reports/rapport_final.md">rapport final</a>.</p>
+
+<footer>
+  Diabel KANDJI · Données&nbsp;: compétition « Financial Inclusion in Africa » (Zindi), enquêtes FinScope 2016–2018 · Python, scikit-learn, Optuna, SHAP
+</footer>
+
+</main>
+</body>
+</html>
