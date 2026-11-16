@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Données (non versionnées : à télécharger sur Zindi)
+data/raw/
+data/processed/
+
+# Artefacts
+catboost_info/
+.ipynb_checkpoints/
+
+# Anciens brouillons de notebooks (non publiés)
+notebooks/_brouillons/
